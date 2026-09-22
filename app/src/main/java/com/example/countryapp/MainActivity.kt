@@ -1,0 +1,128 @@
+package com.example.countryapp // Ganti sesuai package name aplikasi kamu
+
+import android.app.DatePickerDialog
+import android.app.TimePickerDialog
+import android.os.Bundle
+import android.view.View
+import android.widget.AdapterView
+import android.widget.ArrayAdapter
+import android.widget.Toast
+import androidx.appcompat.app.AlertDialog
+import androidx.appcompat.app.AppCompatActivity
+import com.example.countryapp.databinding.ActivityMainBinding
+import java.util.Calendar
+
+class MainActivity : AppCompatActivity(),
+    DatePickerDialog.OnDateSetListener,
+    TimePickerDialog.OnTimeSetListener {
+
+    private lateinit var binding: ActivityMainBinding
+    private lateinit var provinces: Array<String>
+
+    private val countries = arrayOf(
+        "Indonesia", "United States", "United Kingdom", "Germany",
+        "France", "Australia", "Japan", "China", "Brazil", "Canada"
+    )
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        binding = ActivityMainBinding.inflate(layoutInflater)
+        setContentView(binding.root)
+
+        provinces = resources.getStringArray(R.array.provinces)
+
+        setupSpinners()
+        setupDateAndTimePickers()
+        setupButtons()
+    }
+
+    private fun setupSpinners() {
+        with(binding) {
+            // Setup Country Spinner
+            val adapterCountry = ArrayAdapter(this@MainActivity, android.R.layout.simple_spinner_item, countries)
+            adapterCountry.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
+            spinnerCountry.adapter = adapterCountry
+
+            // Setup Province Spinner
+            val adapterProvinces = ArrayAdapter(this@MainActivity, android.R.layout.simple_spinner_item, provinces)
+            adapterProvinces.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
+            spinnerProvinces.adapter = adapterProvinces
+
+            // Spinner Listener
+            spinnerCountry.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
+                override fun onItemSelected(parent: AdapterView<*>, view: View?, position: Int, id: Long) {
+                    Toast.makeText(this@MainActivity, countries[position], Toast.LENGTH_SHORT).show()
+                }
+
+                override fun onNothingSelected(parent: AdapterView<*>) {
+                    // write code to perform some action
+                }
+            }
+        }
+    }
+
+    private fun setupDateAndTimePickers() {
+        with(binding) {
+            // Widget DatePicker
+            val calendar = Calendar.getInstance()
+            datePicker.init(
+                calendar.get(Calendar.YEAR),
+                calendar.get(Calendar.MONTH),
+                calendar.get(Calendar.DAY_OF_MONTH)
+            ) { _, year, monthOfYear, dayOfMonth ->
+                val selectedDate = "$dayOfMonth/${monthOfYear + 1}/$year"
+                Toast.makeText(this@MainActivity, selectedDate, Toast.LENGTH_SHORT).show()
+            }
+
+            // Widget TimePicker
+            timePicker.setOnTimeChangedListener { _, hourOfDay, minute ->
+                val selectedTime = String.format("%02d:%02d", hourOfDay, minute)
+                Toast.makeText(this@MainActivity, selectedTime, Toast.LENGTH_SHORT).show()
+            }
+        }
+    }
+
+    private fun setupButtons() {
+        with(binding) {
+            btnShowCalendar.setOnClickListener {
+                val datePickerFragment = DatePickerFragment()
+                datePickerFragment.show(supportFragmentManager, "datePicker")
+            }
+
+            btnShowTimePicker.setOnClickListener {
+                val timePickerFragment = TimePickerFragment()
+                timePickerFragment.show(supportFragmentManager, "timePicker")
+            }
+
+            btnShowAlertDialog.setOnClickListener {
+                val builder = AlertDialog.Builder(this@MainActivity)
+                builder.setTitle("Keluar")
+                builder.setMessage("Apakah Anda yakin ingin keluar dari aplikasi?")
+                builder.setPositiveButton("Ya") { _, _ ->
+                    finish()
+                }
+                builder.setNegativeButton("Tidak") { dialog, _ ->
+                    dialog.dismiss()
+                }
+                builder.create().show()
+            }
+
+            btnShowCustomDialog.setOnClickListener {
+                val dialog = DialogExit()
+                dialog.show(supportFragmentManager, "dialogExit")
+            }
+        }
+    }
+
+    // Override Method untuk DatePickerDialog (Dialog Pop-up)
+    override fun onDateSet(view: android.widget.DatePicker?, year: Int, month: Int, dayOfMonth: Int) {
+        val selectedDate = "$dayOfMonth/${month + 1}/$year"
+        Toast.makeText(this@MainActivity, selectedDate, Toast.LENGTH_SHORT).show()
+    }
+
+    // Override Method untuk TimePickerDialog (Dialog Pop-up)
+    override fun onTimeSet(view: android.widget.TimePicker?, hourOfDay: Int, minute: Int) {
+        val selectedTime = String.format("%02d:%02d", hourOfDay, minute)
+        Toast.makeText(this@MainActivity, selectedTime, Toast.LENGTH_SHORT).show()
+    }
+}
